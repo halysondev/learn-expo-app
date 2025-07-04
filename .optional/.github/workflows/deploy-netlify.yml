@@ -1,0 +1,43 @@
+name: Netlify Deployment
+
+env:
+  NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+  NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - production
+      - preview
+      - development
+
+permissions:
+  contents: write
+
+jobs:
+  Build:
+    name: Netlify Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📦 Checkout project repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup PNPM + install deps
+        uses: ./.github/actions/setup-node-pnpm-install
+
+      - name: Install Netlify CLI
+        run: pnpm install --global netlify-cli@latest
+
+      - name: Build Project Artifacts
+        run: pnpm run export
+
+      - name: Deploy Project Artifacts to Netlify
+        run: |
+          if [ ${{ github.ref_name }} == "production" ]; then
+            netlify deploy --prod --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
+          else
+            netlify deploy --context ${{ github.ref_name }} --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
+          fi
