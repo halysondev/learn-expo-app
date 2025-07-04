@@ -64,7 +64,7 @@ export default function Modal() {
                   UI Components Showcase
                 </CardTitle>
                 <CardDescription className='text-white/80 text-center'>
-                  Explore beautiful interactive components
+                  Explore beautiful interactive components with full dark mode support
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -75,9 +75,27 @@ export default function Modal() {
             <Card className='w-full rounded-xl'>
               <CardHeader>
                 <CardTitle className='text-xl'>Interactive Demo</CardTitle>
-                <CardDescription>Test various interactive components</CardDescription>
+                <CardDescription>Test various interactive components with theme support</CardDescription>
               </CardHeader>
               <CardContent className='gap-4'>
+                {/* Theme Demo Section */}
+                <View className='p-4 rounded-lg bg-muted/50 dark:bg-muted border border-border'>
+                  <Text className='font-semibold mb-2'>🎨 Dark Mode Demo</Text>
+                  <Text className='text-sm text-muted-foreground mb-3'>
+                    This section demonstrates theme-aware components. Toggle the theme using the button in the header!
+                  </Text>
+                  <View className='flex-row gap-2'>
+                    <View className='flex-1 p-3 rounded bg-background border border-border'>
+                      <Text className='text-xs text-muted-foreground'>Background</Text>
+                      <Text className='font-medium'>Content adapts to theme</Text>
+                    </View>
+                    <View className='flex-1 p-3 rounded bg-primary'>
+                      <Text className='text-xs text-primary-foreground/70'>Primary</Text>
+                      <Text className='font-medium text-primary-foreground'>Always readable</Text>
+                    </View>
+                  </View>
+                </View>
+                
                 <View className='flex-row items-center justify-between'>
                   <Text className='text-base font-medium'>Enable Notifications</Text>
                   <Switch checked={isEnabled} onCheckedChange={setIsEnabled} />
