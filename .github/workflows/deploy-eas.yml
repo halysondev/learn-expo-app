@@ -40,6 +40,9 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
+      - name: Export app
+        run: pnpm run export
+
       - name: Deploy Web App on EAS Hosting
         run: pnpm run deploy:${{ github.ref_name }}
 
