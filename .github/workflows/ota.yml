@@ -1,4 +1,4 @@
-name: ota
+name: Expo OTA Update
 on:
   workflow_dispatch:
   push:
