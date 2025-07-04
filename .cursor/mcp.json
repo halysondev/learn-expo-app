@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "netlify-mcp": {
+      "type": "command",
+      "command": "npx",
+      "args": ["-y", "@netlify/mcp"]
+    }
+  }
+}
