@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "test1",
-    "slug": "test1",
+    "name": "learn-expo-app",
+    "slug": "learn-expo-app",
     "version": "1.0.0",
-    "scheme": "test1",
+    "scheme": "learn-expo-app",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -24,7 +24,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.halydev.test1"
+      "package": "com.halydev.learn-expo-app"
     },
     "web": {
       "bundler": "metro",

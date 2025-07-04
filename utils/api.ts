@@ -5,7 +5,7 @@ const isDev = __DEV__;
 
 // Base URLs from environment
 const DEV_URL = process.env.EXPO_PUBLIC_API_URL_DEV || 'http://localhost:8081';
-const PROD_URL = process.env.EXPO_PUBLIC_API_URL_PROD || 'https://test1.halysondev.expo.app';
+const PROD_URL = process.env.EXPO_PUBLIC_API_URL_PROD || 'https://learn-expo-app.halysondev.expo.app';
 const API_PATH = process.env.EXPO_PUBLIC_API_BASE_URL || '/api';
 
 // API Configuration
