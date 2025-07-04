@@ -38,6 +38,6 @@ jobs:
         run: |
           if [ ${{ github.ref_name }} == "production" ]; then
             netlify deploy --prod --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
-          elif [ ${{ github.ref_name }} == "preview" ]; then
+          else
             netlify deploy --context ${{ github.ref_name }} --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
           fi

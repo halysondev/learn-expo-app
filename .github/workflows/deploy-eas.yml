@@ -1,4 +1,4 @@
-name: deploy-eas-hosting
+name: Deploy EAS Hosting
 on:
   workflow_dispatch:
   push:
