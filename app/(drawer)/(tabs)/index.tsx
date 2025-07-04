@@ -11,19 +11,136 @@ import { Text } from '~/components/ui/text';
 import { Badge } from '~/components/ui/badge';
 import { Separator } from '~/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
 import { Info } from '~/lib/icons/Info';
+import { API_CONFIG, api } from '~/utils/api';
 
 const PROFILE_AVATAR = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face';
+
+interface ApiResponse {
+  hello: string;
+  message: string;
+  timestamp: string;
+  method: string;
+  success?: boolean;
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface UsersResponse {
+  users?: User[];
+  user?: User;
+  count?: number;
+  totalUsers?: number;
+  remainingUsers?: number;
+  deletedUser?: User;
+  message?: string;
+  timestamp: string;
+  error?: string;
+}
 
 export default function Dashboard() {
   const [progress, setProgress] = React.useState(78);
   const [skillProgress, setSkillProgress] = React.useState(85);
   const [taskProgress, setTaskProgress] = React.useState(62);
+  
+  // API Demo States
+  const [apiResponse, setApiResponse] = React.useState<ApiResponse | null>(null);
+  const [isLoadingApi, setIsLoadingApi] = React.useState(false);
+  const [apiError, setApiError] = React.useState<string | null>(null);
+  const [userName, setUserName] = React.useState('Developer');
+  
+  // Users API States
+  const [usersResponse, setUsersResponse] = React.useState<UsersResponse | null>(null);
+  const [isLoadingUsers, setIsLoadingUsers] = React.useState(false);
+  const [usersError, setUsersError] = React.useState<string | null>(null);
 
   function updateProgressValues() {
     setProgress(Math.floor(Math.random() * 100));
     setSkillProgress(Math.floor(Math.random() * 100));
     setTaskProgress(Math.floor(Math.random() * 100));
+  }
+
+  async function callGetApi() {
+    setIsLoadingApi(true);
+    setApiError(null);
+    
+    try {
+      const data = await api.get<ApiResponse>('/hello', { name: userName });
+      setApiResponse(data);
+    } catch (error) {
+      setApiError(error instanceof Error ? error.message : 'Failed to fetch');
+      setApiResponse(null);
+    } finally {
+      setIsLoadingApi(false);
+    }
+  }
+
+  async function fetchUsers() {
+    setIsLoadingUsers(true);
+    setUsersError(null);
+    
+    try {
+      const data = await api.get<UsersResponse>('/users');
+      setUsersResponse(data);
+    } catch (error) {
+      setUsersError(error instanceof Error ? error.message : 'Failed to fetch users');
+      setUsersResponse(null);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  }
+
+  async function createUser() {
+    setIsLoadingUsers(true);
+    setUsersError(null);
+    
+    try {
+      const data = await api.post<UsersResponse>('/users', { name: userName });
+      setUsersResponse(data);
+    } catch (error) {
+      setUsersError(error instanceof Error ? error.message : 'Failed to create user');
+      setUsersResponse(null);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  }
+
+  async function deleteUser(userId: number) {
+    setIsLoadingUsers(true);
+    setUsersError(null);
+    
+    try {
+      const data = await api.delete<UsersResponse>('/users', { id: userId });
+      setUsersResponse(data);
+    } catch (error) {
+      setUsersError(error instanceof Error ? error.message : 'Failed to delete user');
+      setUsersResponse(null);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  }
+
+  async function callPostApi() {
+    setIsLoadingApi(true);
+    setApiError(null);
+    
+    try {
+      const data = await api.post<ApiResponse>('/hello', { name: userName });
+      setApiResponse(data);
+    } catch (error) {
+      setApiError(error instanceof Error ? error.message : 'Failed to fetch');
+      setApiResponse(null);
+    } finally {
+      setIsLoadingApi(false);
+    }
   }
 
   return (
@@ -193,6 +310,253 @@ export default function Dashboard() {
                   <Text>Reports</Text>
                 </Button>
               </View>
+            </CardContent>
+          </Card>
+
+          {/* API Demo */}
+          <Card className='w-full rounded-xl'>
+            <CardHeader>
+              <CardTitle className='text-xl'>🚀 API Demo</CardTitle>
+              <CardDescription>Test the hello API endpoint with different HTTP methods</CardDescription>
+            </CardHeader>
+            <CardContent className='gap-4'>
+              {/* Input for name parameter */}
+              <View className='gap-2'>
+                <Label><Text>Your Name</Text></Label>
+                <Input
+                  value={userName}
+                  onChangeText={setUserName}
+                  placeholder="Enter your name"
+                  className='h-12'
+                />
+              </View>
+
+              {/* API Buttons */}
+              <View className='flex-row gap-3'>
+                <Button 
+                  variant='default' 
+                  className='flex-1'
+                  onPress={callGetApi}
+                  disabled={isLoadingApi}
+                >
+                  <Text>{isLoadingApi ? 'Loading...' : 'GET /api/hello'}</Text>
+                </Button>
+                
+                <Button 
+                  variant='secondary' 
+                  className='flex-1'
+                  onPress={callPostApi}
+                  disabled={isLoadingApi}
+                >
+                  <Text>{isLoadingApi ? 'Loading...' : 'POST /api/hello'}</Text>
+                </Button>
+              </View>
+
+              {/* Loading Indicator */}
+              {isLoadingApi && (
+                <View className='items-center py-4'>
+                  <Progress value={50} className='h-2 w-full animate-pulse' />
+                  <Text className='text-sm text-muted-foreground mt-2'>Calling API...</Text>
+                </View>
+              )}
+
+              {/* Error Display */}
+              {apiError && (
+                <Alert icon={Info} className='border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950'>
+                  <AlertTitle className='text-red-800'><Text>API Error</Text></AlertTitle>
+                  <AlertDescription className='text-red-700'>
+                    <Text>{apiError}</Text>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Success Response */}
+              {apiResponse && !apiError && (
+                <Alert icon={Info} className='border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950'>
+                  <AlertTitle className='text-green-800'><Text>API Response</Text></AlertTitle>
+                  <AlertDescription className='text-green-700'>
+                    <View className='gap-2 mt-2'>
+                      <Text className='font-semibold'>Message: {apiResponse.message}</Text>
+                      <Text>Method: {apiResponse.method}</Text>
+                      <Text>Hello: {apiResponse.hello}</Text>
+                      <Text className='text-xs'>Time: {new Date(apiResponse.timestamp).toLocaleTimeString()}</Text>
+                      {apiResponse.success && (
+                        <Badge variant='outline' className='w-20'>
+                          <Text>Success</Text>
+                        </Badge>
+                      )}
+                    </View>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* API Documentation */}
+              <View className='p-4 bg-muted/50 rounded-lg border border-border'>
+                <Text className='font-semibold mb-2'>📖 API Endpoints</Text>
+                                  <Text className='text-xs text-muted-foreground mb-2'>
+                    Base URL: {API_CONFIG.fullUrl} ({API_CONFIG.environment})
+                  </Text>
+                <View className='gap-2'>
+                  <Text className='text-sm text-muted-foreground'>
+                                         <Text className='font-mono'>GET {API_CONFIG.path}/hello?name=yourname</Text> - Get personalized greeting
+                  </Text>
+                  <Text className='text-sm text-muted-foreground'>
+                                         <Text className='font-mono'>POST {API_CONFIG.path}/hello</Text> - Send POST request with JSON body
+                  </Text>
+                </View>
+              </View>
+            </CardContent>
+          </Card>
+
+          {/* Users API Demo */}
+          <Card className='w-full rounded-xl'>
+            <CardHeader>
+              <CardTitle className='text-xl'>👥 Users API Demo</CardTitle>
+              <CardDescription>Advanced API with CRUD operations (Create, Read, Delete)</CardDescription>
+            </CardHeader>
+            <CardContent className='gap-4'>
+              {/* API Buttons */}
+              <View className='flex-row gap-2'>
+                <Button 
+                  variant='default' 
+                  className='flex-1'
+                  onPress={fetchUsers}
+                  disabled={isLoadingUsers}
+                >
+                  <Text>{isLoadingUsers ? 'Loading...' : 'GET Users'}</Text>
+                </Button>
+                
+                <Button 
+                  variant='secondary' 
+                  className='flex-1'
+                  onPress={createUser}
+                  disabled={isLoadingUsers}
+                >
+                  <Text>{isLoadingUsers ? 'Loading...' : 'POST User'}</Text>
+                </Button>
+              </View>
+
+              {/* Loading Indicator */}
+              {isLoadingUsers && (
+                <View className='items-center py-4'>
+                  <Progress value={50} className='h-2 w-full animate-pulse' />
+                  <Text className='text-sm text-muted-foreground mt-2'>Processing users API...</Text>
+                </View>
+              )}
+
+              {/* Error Display */}
+              {usersError && (
+                <Alert icon={Info} className='border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950'>
+                  <AlertTitle className='text-red-800'><Text>Users API Error</Text></AlertTitle>
+                  <AlertDescription className='text-red-700'>
+                    <Text>{usersError}</Text>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Success Response */}
+              {usersResponse && !usersError && (
+                <Alert icon={Info} className='border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950'>
+                  <AlertTitle className='text-blue-800'><Text>Users API Response</Text></AlertTitle>
+                  <AlertDescription className='text-blue-700'>
+                                         <View className='gap-3 mt-2'>
+                       {usersResponse.message && (
+                         <Text className='font-semibold'>{usersResponse.message}</Text>
+                       )}
+                       
+                       {/* Debug Info */}
+                       <View className='p-2 bg-muted/30 rounded border border-muted'>
+                         <Text className='text-xs font-mono mb-2'>
+                           API URL: {API_CONFIG.fullUrl} ({API_CONFIG.environment.toUpperCase()})
+                         </Text>
+                         <Text className='text-xs font-mono'>
+                           Raw Response: {JSON.stringify(usersResponse, null, 2)}
+                         </Text>
+                       </View>
+                       
+                       {usersResponse.users && (
+                         <View className='gap-3'>
+                           <Text className='font-medium'>Users ({usersResponse.count}):</Text>
+                           {usersResponse.users.map((user, index) => (
+                             <View key={user.id || index} className='p-3 bg-background/50 rounded border border-border'>
+                               <View className='flex-row items-start justify-between'>
+                                 <View className='flex-1 mr-3'>
+                                   <Text className='font-medium text-foreground text-base'>
+                                     {user.name || 'Unknown User'}
+                                   </Text>
+                                   <Text className='text-sm text-muted-foreground mt-1'>
+                                     {user.email || 'No email'}
+                                   </Text>
+                                   <Text className='text-sm text-muted-foreground'>
+                                     Role: {user.role || 'No role'}
+                                   </Text>
+                                   <Text className='text-xs text-muted-foreground mt-1'>
+                                     ID: {user.id || 'No ID'}
+                                   </Text>
+                                 </View>
+                                 <Button 
+                                   variant='destructive' 
+                                   size='sm'
+                                   onPress={() => deleteUser(user.id)}
+                                   disabled={isLoadingUsers}
+                                 >
+                                   <Text>Delete</Text>
+                                 </Button>
+                               </View>
+                             </View>
+                           ))}
+                         </View>
+                       )}
+                      
+                      {usersResponse.user && (
+                        <View className='gap-2'>
+                          <Text className='font-medium'>Created User:</Text>
+                          <View className='p-2 bg-background/50 rounded border border-border'>
+                            <Text className='font-medium'>{usersResponse.user.name}</Text>
+                            <Text className='text-xs text-muted-foreground'>{usersResponse.user.email} • {usersResponse.user.role}</Text>
+                          </View>
+                          <Text className='text-xs'>Total Users: {usersResponse.totalUsers}</Text>
+                        </View>
+                      )}
+                      
+                      {usersResponse.deletedUser && (
+                        <View className='gap-2'>
+                          <Text className='font-medium'>Deleted User:</Text>
+                          <View className='p-2 bg-red-50 dark:bg-red-950 rounded border border-red-200 dark:border-red-900'>
+                            <Text className='font-medium'>{usersResponse.deletedUser.name}</Text>
+                            <Text className='text-xs text-muted-foreground'>{usersResponse.deletedUser.email}</Text>
+                          </View>
+                          <Text className='text-xs'>Remaining Users: {usersResponse.remainingUsers}</Text>
+                        </View>
+                      )}
+                      
+                      <Text className='text-xs'>Time: {new Date(usersResponse.timestamp).toLocaleTimeString()}</Text>
+                    </View>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+                             {/* API Documentation */}
+               <View className='p-4 bg-muted/50 rounded-lg border border-border'>
+                 <Text className='font-semibold mb-2'>📖 Users API Endpoints</Text>
+                 <Text className='text-xs text-muted-foreground mb-2'>
+                   Base URL: {API_CONFIG.fullUrl} ({API_CONFIG.environment})
+                 </Text>
+                 <View className='gap-2'>
+                   <Text className='text-sm text-muted-foreground'>
+                                           <Text className='font-mono'>GET {API_CONFIG.path}/users</Text> - Get all users
+                   </Text>
+                   <Text className='text-sm text-muted-foreground'>
+                                           <Text className='font-mono'>GET {API_CONFIG.path}/users?id=1</Text> - Get specific user
+                   </Text>
+                   <Text className='text-sm text-muted-foreground'>
+                                           <Text className='font-mono'>POST {API_CONFIG.path}/users</Text> - Create new user
+                   </Text>
+                   <Text className='text-sm text-muted-foreground'>
+                                           <Text className='font-mono'>DELETE {API_CONFIG.path}/users?id=1</Text> - Delete user
+                   </Text>
+                 </View>
+               </View>
             </CardContent>
           </Card>
         </View>
