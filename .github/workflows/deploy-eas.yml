@@ -1,0 +1,48 @@
+name: deploy-eas-hosting
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - production
+      - preview
+      - development
+
+concurrency:
+  group: deploy-eas-hosting-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    name: EAS Hosting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for EXPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "You must provide an EXPO_TOKEN secret linked to this project's Expo account in this repo's secrets. Learn more: https://docs.expo.dev/eas-update/github-actions"
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup PNPM + install deps
+        uses: ./.github/actions/setup-node-pnpm-install
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build app
+        run: pnpm build
+
+      - name: Deploy Web App on EAS Hosting
+        run: pnpm run deploy:${{ github.ref_name }}
+
